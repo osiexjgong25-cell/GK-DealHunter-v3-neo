@@ -5,25 +5,29 @@ import { analyzeCompany } from "@/lib/analyzer";
 import { addClient } from "@/lib/store";
 
 export async function POST(req: Request) {
-  const { list } = await req.json();
+  try {
+    const { list } = await req.json();
 
-  const res = await Promise.all(
-    list.map(async (name: string) => {
-      const { text, source } = await smartSearch(name);
-      const result = analyzeCompany(text);
+    const results = await Promise.all(
+      list.map(async (name: string) => {
+        const { text, source } = await smartSearch(name);
+        const result = analyzeCompany(text);
 
-      const client = {
-        id: Date.now().toString() + Math.random(),
-        name,
-        source,
-        ...result,
-        status: "未联系"
-      };
+        const client = {
+          id: Date.now().toString() + Math.random(),
+          name,
+          source,
+          ...result,
+          status: "未联系"
+        };
 
-      addClient(client);
-      return client;
-    })
-  );
+        addClient(client);
+        return client;
+      })
+    );
 
-  return Response.json(res);
+    return Response.json(results);
+  } catch (e) {
+    return Response.json({ error: "batch failed" });
+  }
 }
