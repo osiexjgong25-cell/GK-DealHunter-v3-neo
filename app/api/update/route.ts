@@ -1,15 +1,21 @@
-export const runtime = "nodejs";
+// app/api/update/route.ts
+import { NextResponse } from 'next/server';
+import { updateClientStatus } from '../../../lib/store';
 
-import { updateStatus } from "../../../lib/store";
-
+// 接收 ID 和目标 status
 export async function POST(req: Request) {
   try {
     const { id, status } = await req.json();
 
-    updateStatus(id, status);
+    if (!id || !status) {
+      return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
+    }
 
-    return Response.json({ ok: true });
+    // 调用 store 层更改状态
+    updateClientStatus(id, status);
+
+    return NextResponse.json({ ok: true, message: 'Status updated' });
   } catch (e) {
-    return Response.json({ error: "update failed" });
+    return NextResponse.json({ error: 'Update failed' }, { status: 500 });
   }
 }
