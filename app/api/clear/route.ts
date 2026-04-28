@@ -1,17 +1,11 @@
-// app/api/clear/route.ts
 export const runtime = "nodejs";
-import { clearClients } from "../../../lib/store"; // ✅ 名字改成 clearClients
+import { clearClients } from "../../../lib/store"; // 这里的名字必须叫 clearClients
 
 export async function POST() {
   try {
-    clearClients(); // ✅ 调用正确的方法名
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    clearClients(); 
+    return Response.json({ success: true });
   } catch (e) {
-    return new Response(JSON.stringify({ error: "Clear failed" }), {
-      status: 500
-    });
+    return Response.json({ error: "failed" }, { status: 500 });
   }
 }
