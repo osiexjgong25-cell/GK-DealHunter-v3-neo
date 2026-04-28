@@ -5,19 +5,22 @@ import { analyzeCompany } from "@/lib/analyzer";
 import { addClient } from "@/lib/store";
 
 export async function POST(req: Request) {
-  const { name } = await req.json();
+  try {
+    const { name } = await req.json();
 
-  const { text, source } = await smartSearch(name);
+    const { text, source } = await smartSearch(name);
+    const result = analyzeCompany(text);
 
-  const result = analyzeCompany(text);
+    const client = {
+      name,
+      source,
+      ...result
+    };
 
-  const client = {
-    name,
-    source,
-    ...result
-  };
+    addClient(client);
 
-  addClient(client);
-
-  return Response.json(client);
+    return Response.json(client);
+  } catch (e) {
+    return Response.json({ error: "analyze failed" });
+  }
 }
