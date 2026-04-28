@@ -1,43 +1,32 @@
-// lib/store.ts
-
 export interface Client {
   id: string;
   name: string;
   score: number;
   level: 'S' | 'A' | 'B';
-  type: string;     // ✅ 允许任意分类（如：股权、债权、风险、机会）
+  type: string; 
   tags: string[];
   summary: string;
   source: string;
-  status: string;   // ✅ 兼容不同的池子状态
+  status: string;
 }
 
-// 内存数据库
 let clients: Client[] = [];
 
-export function getClients() {
-  return clients;
-}
+export const getClients = () => clients;
 
-export function addClient(c: Omit<Client, 'id' | 'status'>): Client {
+export const addClient = (c: Omit<Client, 'id' | 'status'>) => {
   const newClient: Client = {
     id: `FA_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
     ...c,
-    status: '未联系', // 默认进入第一个池子
+    status: '未联系',
   };
   clients.push(newClient);
   return newClient;
-}
+};
 
-export function updateClientStatus(id: string, newStatus: string) {
+export const updateClientStatus = (id: string, newStatus: string) => {
   const index = clients.findIndex(c => c.id === id);
-  if (index !== -1) {
-    clients[index].status = newStatus;
-    return clients[index];
-  }
-  return null;
-}
+  if (index !== -1) clients[index].status = newStatus;
+};
 
-export function clearClients() {
-  clients = [];
-}
+export const clearClients = () => { clients = []; }; // 统一名字为 clearClients
