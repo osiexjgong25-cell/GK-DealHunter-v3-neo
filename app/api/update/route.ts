@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 
-import { updateStatus } from "lib/store";
+import { updateStatus } from "../../../lib/store";
 
 export async function POST(req: Request) {
   try {
