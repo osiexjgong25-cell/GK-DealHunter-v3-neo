@@ -1,21 +1,22 @@
-// app/page.tsx
+// app/page.tsx 完整版 - 确保复制到最后一行
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Search, PlusCircle, Database, CheckCircle, Clock, Loader2, Trash2 } from 'lucide-react';
+import { Search, PlusCircle, Database, CheckCircle, Clock, Loader2 } from 'lucide-react';
 
 export default function NotionFA() {
   const [input, setInput] = useState('');
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 状态定义（对应三个池子）
   const columns = ['未联系', '跟进中', '已结束'];
 
   const fetchClients = async () => {
-    const res = await fetch('/api/clients');
-    const data = await res.json();
-    setClients(data);
+    try {
+      const res = await fetch('/api/clients');
+      const data = await res.json();
+      setClients(data);
+    } catch (e) { console.error(e); }
   };
 
   useEffect(() => { fetchClients(); }, []);
@@ -43,7 +44,6 @@ export default function NotionFA() {
 
   return (
     <div className="min-h-screen bg-[#FBFBFA] text-[#37352F] p-8">
-      {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
         <h1 className="text-3xl font-bold flex items-center gap-3">
           <Database className="w-8 h-8 text-blue-600" /> DealHunter Pro
@@ -51,10 +51,9 @@ export default function NotionFA() {
         <p className="text-gray-500 mt-2 text-sm">Notion Style Financing Pipeline</p>
       </div>
 
-      {/* Input Area */}
       <div className="max-w-6xl mx-auto mb-10 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
         <textarea
-          className="w-full p-3 border-none focus:ring-0 text-lg resize-none"
+          className="w-full p-3 border-none focus:ring-0 text-lg resize-none outline-none"
           placeholder="输入公司名称（每行一个）..."
           rows={3}
           value={input}
@@ -65,7 +64,7 @@ export default function NotionFA() {
           <button
             onClick={handleAnalyze}
             disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 transition-all disabled:bg-gray-300"
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 disabled:bg-gray-300"
           >
             {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Search className="w-4 h-4" />}
             开始挖掘
@@ -73,54 +72,34 @@ export default function NotionFA() {
         </div>
       </div>
 
-      {/* Kanban Board */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         {columns.map(col => (
           <div key={col} className="bg-[#F2F1EE] rounded-lg p-3 min-h-[500px]">
-            <div className="flex items-center justify-between mb-4 px-2">
-              <h3 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-gray-600">
-                {col === '未联系' && <Clock className="w-4 h-4" />}
-                {col === '跟进中' && <PlusCircle className="w-4 h-4 text-orange-500" />}
-                {col === '已结束' && <CheckCircle className="w-4 h-4 text-green-600" />}
-                {col}
-                <span className="bg-gray-200 px-2 py-0.5 rounded-full text-[10px]">
-                  {clients.filter(c => c.status === col).length}
-                </span>
-              </h3>
-            </div>
+            <h3 className="font-semibold flex items-center gap-2 text-sm uppercase tracking-wider text-gray-600 mb-4 px-2">
+              {col === '未联系' && <Clock className="w-4 h-4" />}
+              {col === '跟进中' && <PlusCircle className="w-4 h-4 text-orange-500" />}
+              {col === '已结束' && <CheckCircle className="w-4 h-4 text-green-600" />}
+              {col}
+            </h3>
 
             <div className="space-y-3">
               {clients.filter(c => c.status === col).map((client: any) => (
-                <div key={client.id} className="bg-white border border-gray-200 p-4 rounded-md shadow-sm hover:shadow-md transition-shadow group">
+                <div key={client.id} className="bg-white border border-gray-200 p-4 rounded-md shadow-sm group">
                   <div className="flex justify-between items-start mb-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
-                      client.level === 'S' ? 'bg-red-100 text-red-600' : 
-                      client.level === 'A' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
-                    }`}>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600">
                       {client.level}级 · {client.type}
                     </span>
                     <span className="text-lg font-bold text-blue-600">{client.score}</span>
                   </div>
                   <h4 className="font-bold text-gray-800 mb-1">{client.name}</h4>
-                  <p className="text-[11px] text-gray-500 line-clamp-2 mb-3">{client.summary}</p>
+                  <p className="text-[11px] text-gray-500 mb-3 line-clamp-2">{client.summary}</p>
                   
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {client.tags?.map((t: string) => (
-                      <span key={t} className="text-[9px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-400">#{t}</span>
-                    ))}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity border-t pt-3 mt-2">
+                  <div className="flex gap-2 border-t pt-3 mt-2">
                     {col === '未联系' && (
-                      <button onClick={() => moveStatus(client.id, '跟进中')} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100 w-full">
-                        设为跟进
-                      </button>
+                      <button onClick={() => moveStatus(client.id, '跟进中')} className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded w-full">设为跟进</button>
                     )}
                     {col === '跟进中' && (
-                      <button onClick={() => moveStatus(client.id, '已结束')} className="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded hover:bg-green-100 w-full">
-                        完成联系
-                      </button>
+                      <button onClick={() => moveStatus(client.id, '已结束')} className="text-[10px] bg-green-50 text-green-600 px-2 py-1 rounded w-full">完成联系</button>
                     )}
                   </div>
                 </div>
