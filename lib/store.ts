@@ -1,3 +1,4 @@
+// lib/store.ts
 export interface Client {
   id: string;
   name: string;
@@ -14,9 +15,9 @@ let clients: Client[] = [];
 
 export const getClients = () => clients;
 
-export const addClient = (c: Omit<Client, 'id' | 'status'>) => {
+export const addClient = (c: Omit<Client, "id" | "status">) => {
   const newClient: Client = {
-    id: `FA_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+    id: `ID_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
     ...c,
     status: '未联系',
   };
@@ -29,4 +30,4 @@ export const updateClientStatus = (id: string, newStatus: string) => {
   if (index !== -1) clients[index].status = newStatus;
 };
 
-export const clearClients = () => { clients = []; }; // 统一名字为 clearClients
+export const clearClients = () => { clients = []; };
