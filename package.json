@@ -1,30 +1,116 @@
-{
-  "name": "gk-dealhunter-v3-notion",
-  "version": "3.3.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "next": "14.2.16",
-    "react": "^18",
-    "react-dom": "^18",
-    "lucide-react": "^0.400.0",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.3.0",
-    "lucide": "^0.400.0"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.16"
-  }
+'use client';
+import React, { useState, useEffect } from 'react';
+import { Search, PlusCircle, Database, CheckCircle, Clock, Loader2, Trash2 } from 'lucide-react';
+
+export default function NotionFA() {
+  const [input, setInput] = useState('');
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // 初始化：从浏览器本地存储读数据
+  useEffect(() => {
+    const saved = localStorage.getItem('fa_data');
+    if (saved) setClients(JSON.parse(saved));
+  }, []);
+
+  // 保存：数据变了就存在浏览器里，绝对不会丢
+  useEffect(() => {
+    localStorage.setItem('fa_data', JSON.stringify(clients));
+  }, [clients]);
+
+  const handleAnalyze = () => {
+    if (!input.trim()) return;
+    setLoading(true);
+    
+    // 模拟挖掘延迟
+    setTimeout(() => {
+      const names = input.split('\n').filter(i => i.trim());
+      const newClients = names.map(name => ({
+        id: Date.now() + Math.random(),
+        name: name.trim(),
+        score: Math.floor(Math.random() * 15) + 85,
+        level: Math.random() > 0.5 ? 'S' : 'A',
+        type: '融资预测',
+        summary: `已完成对 ${name} 的初步画像。当前为演示模式，数据已持久化到本地。`,
+        status: '未联系'
+      }));
+      
+      setClients(prev => [...newClients, ...prev]);
+      setInput('');
+      setLoading(false);
+    }, 800);
+  };
+
+  const moveStatus = (id, next) => {
+    setClients(prev => prev.map(c => c.id === id ? { ...c, status: next } : c));
+  };
+
+  const clearAll = () => { if(confirm('确定清空？')) setClients([]); };
+
+  return (
+    // 强制内联背景颜色，防止被 Vercel 的全局暗色模式覆盖
+    <div style={{backgroundColor: '#FBFBFA', color: '#37352F', minHeight: '100vh', padding: '20px'}}>
+      <div style={{maxWidth: '1100px', margin: '0 auto'}}>
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
+          <h1 style={{fontSize: '24px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px'}}>
+            <Database color="#2563eb" /> DealHunter Notion
+          </h1>
+          <button onClick={clearAll} style={{color: '#999', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px'}}>
+            <Trash2 size={14}/> 清空面板
+          </button>
+        </div>
+
+        <div style={{backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '16px', marginBottom: '40px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)'}}>
+          <textarea 
+            style={{width: '100%', border: 'none', outline: 'none', fontSize: '16px', minHeight: '80px', color: '#37352F'}} 
+            placeholder="输入企业名称（每行一个）..." 
+            value={input}
+            onChange={e => setInput(e.target.value)}
+          />
+          <div style={{display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #f3f4f6', paddingTop: '12px'}}>
+            <button 
+              onClick={handleAnalyze}
+              disabled={loading}
+              style={{backgroundColor: loading ? '#d1d5db' : '#2563eb', color: 'white', padding: '8px 20px', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', border: 'none'}}
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+              {loading ? '正在挖掘...' : '开始挖掘'}
+            </button>
+          </div>
+        </div>
+
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px'}}>
+          {['未联系', '跟进中', '已结束'].map(col => (
+            <div key={col} style={{backgroundColor: '#F2F1EE', borderRadius: '8px', padding: '12px', minHeight: '500px'}}>
+              <h3 style={{fontSize: '12px', fontWeight: 'bold', color: '#6b7280', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px'}}>
+                {col === '未联系' ? <Clock size={14}/> : col === '跟进中' ? <PlusCircle size={14}/> : <CheckCircle size={14}/>}
+                {col} · {clients.filter(c => c.status === col).length}
+              </h3>
+              
+              {clients.filter(c => c.status === col).map(c => (
+                <div key={c.id} style={{backgroundColor: 'white', padding: '16px', borderRadius: '6px', marginBottom: '12px', border: '1px solid #e5e7eb', boxShadow: '0 1px 2px rgba(0,0,0,0.05)'}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                    <span style={{fontSize: '10px', fontWeight: 'bold', backgroundColor: '#eff6ff', color: '#2563eb', padding: '2px 6px', borderRadius: '4px'}}>
+                      {c.level}级 · {c.type}
+                    </span>
+                    <span style={{color: '#2563eb', fontWeight: 'bold'}}>{c.score}</span>
+                  </div>
+                  <div style={{fontWeight: 'bold', fontSize: '15px', marginBottom: '4px'}}>{c.name}</div>
+                  <div style={{fontSize: '11px', color: '#6b7280', lineHeight: '1.5', marginBottom: '12px'}}>{c.summary}</div>
+                  {col !== '已结束' && (
+                    <button 
+                      onClick={() => moveStatus(c.id, col === '未联系' ? '跟进中' : '已结束')}
+                      style={{width: '100%', padding: '6px', fontSize: '11px', backgroundColor: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '4px', cursor: 'pointer'}}
+                    >
+                      推进至 {col === '未联系' ? '跟进中' : '已结束'}
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
