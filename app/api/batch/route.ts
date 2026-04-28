@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
 
-import { smartSearch } from "@/lib/search";
-import { analyzeCompany } from "@/lib/analyzer";
-import { addClient } from "@/lib/store";
+import { smartSearch } from "lib/search";
+import { analyzeCompany } from "lib/analyzer";
+import { addClient } from "lib/store";
 
 export async function POST(req: Request) {
   try {
