@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 
-import { clearAll } from "lib/store";
+import { clearAll } from "../../../lib/store";
 
 export async function POST() {
   try {
